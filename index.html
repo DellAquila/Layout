@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Screenshots</title>
+    <title>FICSAGRAM - Screenshots</title>
     
     <!-- SDK Oficial do Supabase via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -58,7 +58,7 @@
     <div id="gallery" class="gallery-grid"></div>
 
     <script>
-        // 1. Configure suas chaves do Supabase
+        // 1. Chaves e URL do Supabase
         const SUPABASE_URL = 'https://zuehiolboecrtajkxdwp.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1ZWhpb2xib2VjcnRhamt4ZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2NzA4NTEsImV4cCI6MjA1NTI0Njg1MX0.tam56Z3ALtvJxRVl63raZDP7UDPU-R1LD00FIOChydA';
         
@@ -82,15 +82,14 @@
             return link;
         }
 
-        // 2. Carregar galeria existente
+        // 2. Carregar galeria existente (sem ordenação por ID/Data)
         async function carregarFotos() {
             const { data, error } = await supabaseClient
                 .from('ficsagram')
-                .select('img_thumb, img_big')
-                .order('created_at', { ascending: false });
+                .select('img_thumb, img_big');
 
             if (error) {
-                console.error('Erro:', error);
+                console.error('Erro ao carregar fotos:', error);
                 return;
             }
 
