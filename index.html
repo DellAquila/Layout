@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screenshots</title>
+    
+    <!-- SDK Oficial do Supabase via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0f1115;
+            padding: 15px;
+        }
+
+        /* Grade de Thumbnails compacta */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Card da Thumbnail */
+        .thumb-card {
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            border-radius: 6px;
+            background-color: #1a202c;
+            border: 1px solid #2d3748;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+            display: block;
+        }
+
+        .thumb-card:hover {
+            transform: scale(1.03);
+            border-color: #63b3ed;
+        }
+
+        .thumb-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="gallery" class="gallery-grid"></div>
+
+    <script>
+        // 1. Configure suas chaves do Supabase
+        const SUPABASE_URL = 'https://zuehiolboecrtajkxdwp.supabase.co/';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1ZWhpb2xib2VjcnRhamt4ZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2NzA4NTEsImV4cCI6MjA1NTI0Njg1MX0.tam56Z3ALtvJxRVl63raZDP7UDPU-R1LD00FIOChydA';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const gallery = document.getElementById('gallery');
+
+        // Função para criar cada thumbnail na tela
+        function criarThumb(data) {
+            const link = document.createElement('a');
+            link.className = 'thumb-card';
+            link.href = data.img_big;        // Abre a imagem grande no clique
+            link.target = '_blank';         // Em nova aba
+            link.rel = 'noopener noreferrer';
+
+            const img = document.createElement('img');
+            img.src = data.img_thumb;       // Exibe a thumbnail leve
+            img.loading = 'lazy';           // Não pesa o navegador
+            img.alt = 'Screenshot';
+
+            link.appendChild(img);
+            return link;
+        }
+
+        // 2. Carregar galeria existente
+        async function carregarFotos() {
+            const { data, error } = await supabaseClient
+                .from('ficsagram')
+                .select('img_thumb, img_big')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Erro:', error);
+                return;
+            }
+
+            if (data) {
+                data.forEach(item => {
+                    gallery.appendChild(criarThumb(item));
+                });
+            }
+        }
+
+        // 3. Receber novas screenshots ao vivo sem recarregar a página
+        function escutarNovasFotos() {
+            supabaseClient
+                .channel('public:ficsagram')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ficsagram' }, payload => {
+                    const novaThumb = criarThumb(payload.new);
+                    gallery.insertBefore(novaThumb, gallery.firstChild);
+                })
+                .subscribe();
+        }
+
+        carregarFotos();
+        escutarNovasFotos();
+    </script>
+</body>
+</html>
