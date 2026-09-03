@@ -1,118 +1,180 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FICSAGRAM - Screenshots</title>
-    
-    <!-- SDK Oficial do Supabase via CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficsagram - Satisfactory Gallery</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --ficsit-orange: #fa931d;
+      --bg-dark: #121316;
+      --card-bg: #1c1e22;
+      --text-main: #e1e4e8;
+      --text-muted: #9da5b4;
+    }
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        body {
-            background-color: #0f1115;
-            padding: 15px;
-        }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
 
-        /* Grade de Thumbnails compacta */
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 10px;
-            max-width: 1600px;
-            margin: 0 auto;
-        }
+    header {
+      text-align: center;
+      max-width: 800px;
+      margin-bottom: 40px;
+      padding: 20px;
+    }
 
-        /* Card da Thumbnail */
-        .thumb-card {
-            aspect-ratio: 16 / 9;
-            overflow: hidden;
-            border-radius: 6px;
-            background-color: #1a202c;
-            border: 1px solid #2d3748;
-            transition: transform 0.15s ease, border-color 0.15s ease;
-            display: block;
-        }
+    h1 {
+      color: var(--ficsit-orange);
+      font-size: 2.5rem;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
 
-        .thumb-card:hover {
-            transform: scale(1.03);
-            border-color: #63b3ed;
-        }
+    p.intro {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
 
-        .thumb-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-    </style>
+    p.intro a {
+      color: var(--ficsit-orange);
+      text-decoration: none;
+      font-weight: bold;
+      border-bottom: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    p.intro a:hover {
+      border-color: var(--ficsit-orange);
+    }
+
+    .gallery-container {
+      width: 100%;
+      max-width: 1400px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .gallery-card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #2d3139;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .gallery-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 25px rgba(250, 147, 29, 0.2);
+    }
+
+    .gallery-card a {
+      display: block;
+      width: 100%;
+      height: 240px;
+      overflow: hidden;
+    }
+
+    .gallery-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .gallery-card:hover img {
+      transform: scale(1.05);
+    }
+
+    .loading-msg {
+      grid-column: 1 / -1;
+      text-align: center;
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      padding: 40px;
+    }
+  </style>
 </head>
 <body>
 
-    <div id="gallery" class="gallery-grid"></div>
+  <header>
+    <h1>Ficsagram</h1>
+    <p class="intro">
+      Auto upload your Satisfactory screenshots. 
+      <a href="https://ficsit.app/mod/Ficsagram" target="_blank" rel="noopener noreferrer">Download the mod here</a>.
+    </p>
+  </header>
 
-    <script>
-        // 1. Chaves e URL do Supabase
-        const SUPABASE_URL = 'https://zuehiolboecrtajkxdwp.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1ZWhpb2xib2VjcnRhamt4ZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2NzA4NTEsImV4cCI6MjA1NTI0Njg1MX0.tam56Z3ALtvJxRVl63raZDP7UDPU-R1LD00FIOChydA';
-        
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const gallery = document.getElementById('gallery');
+  <main id="gallery" class="gallery-container">
+    <div class="loading-msg">Loading factory screenshots...</div>
+  </main>
 
-        // Função para criar cada thumbnail na tela
-        function criarThumb(data) {
-            const link = document.createElement('a');
-            link.className = 'thumb-card';
-            link.href = data.img_big;        // Abre a imagem grande no clique
-            link.target = '_blank';         // Em nova aba
-            link.rel = 'noopener noreferrer';
+  <script>
+    const SUPABASE_URL = 'https://zuehiolboecrtajkxdwp.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1ZWhpb2xib2VjcnRhamt4ZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2NzA4NTEsImV4cCI6MjA1NTI0Njg1MX0.tam56Z3ALtvJxRVl63raZDP7UDPU-R1LD00FIOChydA'; // Suba a chave publica/anonima aqui
 
-            const img = document.createElement('img');
-            img.src = data.img_thumb;       // Exibe a thumbnail leve
-            img.loading = 'lazy';           // Não pesa o navegador
-            img.alt = 'Screenshot';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            link.appendChild(img);
-            return link;
-        }
+    async function fetchGallery() {
+      const galleryElement = document.getElementById('gallery');
+      
+      const { data, error } = await supabaseClient
+        .from('ficsagram')
+        .select('*')
+        .order('id', { ascending: false });
 
-        // 2. Carregar galeria existente (sem ordenação por ID/Data)
-        async function carregarFotos() {
-            const { data, error } = await supabaseClient
-                .from('ficsagram')
-                .select('img_thumb, img_big');
+      if (error) {
+        console.error('Error fetching screenshots:', error);
+        galleryElement.innerHTML = '<div class="loading-msg">Failed to load screenshots.</div>';
+        return;
+      }
 
-            if (error) {
-                console.error('Erro ao carregar fotos:', error);
-                return;
-            }
+      if (!data || data.length === 0) {
+        galleryElement.innerHTML = '<div class="loading-msg">No screenshots uploaded yet!</div>';
+        return;
+      }
 
-            if (data) {
-                data.forEach(item => {
-                    gallery.appendChild(criarThumb(item));
-                });
-            }
-        }
+      galleryElement.innerHTML = '';
 
-        // 3. Receber novas screenshots ao vivo sem recarregar a página
-        function escutarNovasFotos() {
-            supabaseClient
-                .channel('public:ficsagram')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ficsagram' }, payload => {
-                    const novaThumb = criarThumb(payload.new);
-                    gallery.insertBefore(novaThumb, gallery.firstChild);
-                })
-                .subscribe();
-        }
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'gallery-card';
 
-        carregarFotos();
-        escutarNovasFotos();
-    </script>
+        const link = document.createElement('a');
+        link.href = item.img_big;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+
+        const img = document.createElement('img');
+        img.src = item.img_thumb;
+        img.alt = 'Satisfactory Screenshot';
+        img.loading = 'lazy';
+
+        link.appendChild(img);
+        card.appendChild(link);
+        galleryElement.appendChild(card);
+      });
+    }
+
+    fetchGallery();
+  </script>
 </body>
 </html>
